@@ -66,11 +66,9 @@ async def do_authentication(sender):
 
     if cipher_text is None:
         raise SecurityError(
-            'Step 2 could not find a valid key for fingerprints: {}'
-            .format(', '.join(
-                [str(f) for f in res_pq.server_public_key_fingerprints])
-            )
+            f"Step 2 could not find a valid key for fingerprints: {', '.join([str(f) for f in res_pq.server_public_key_fingerprints])}"
         )
+
 
     server_dh_params = await sender.send(ReqDHParamsRequest(
         nonce=res_pq.nonce,
@@ -180,17 +178,16 @@ async def do_authentication(sender):
     assert isinstance(dh_gen, nonce_types), 'Step 3.1 answer was %s' % dh_gen
     name = dh_gen.__class__.__name__
     if dh_gen.nonce != res_pq.nonce:
-        raise SecurityError('Step 3 invalid {} nonce from server'.format(name))
+        raise SecurityError(f'Step 3 invalid {name} nonce from server')
 
     if dh_gen.server_nonce != res_pq.server_nonce:
-        raise SecurityError(
-            'Step 3 invalid {} server nonce from server'.format(name))
+        raise SecurityError(f'Step 3 invalid {name} server nonce from server')
 
     auth_key = AuthKey(rsa.get_byte_array(gab))
     nonce_number = 1 + nonce_types.index(type(dh_gen))
     new_nonce_hash = auth_key.calc_new_nonce_hash(new_nonce, nonce_number)
 
-    dh_hash = getattr(dh_gen, 'new_nonce_hash{}'.format(nonce_number))
+    dh_hash = getattr(dh_gen, f'new_nonce_hash{nonce_number}')
     if dh_hash != new_nonce_hash:
         raise SecurityError('Step 3 invalid new nonce hash')
 
